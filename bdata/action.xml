@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+    <record id="load_data" model="ir.cron">
+        <field name="name">Load dbata model data</field>
+        <field eval="False" name="active"/>
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model">data.order</field>
+        <field name="function">load_from_csv</field>
+    </record>
+    <record id="export_data" model="ir.cron">
+        <field name="name">Export dbata model data</field>
+        <field eval="False" name="active"/>
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model">data.order</field>
+        <field name="function">export_to_csv</field>
+    </record>
+</data>
+</openerp>
