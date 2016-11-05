@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models
+from odoo import fields, models, api
 import csv
 import os
 import logging
@@ -21,9 +21,6 @@ class BusinessData(models.Model):
     source_url = fields.Char()
     comment = fields.Char()
     catagery = fields.Char()
-    main = fields.Char()
-    process = fields.Char()
-    unprocessed = fields.Char()
 
     _sql_constraints = [
         ('business_name', 'unique(business_name)', 'business_name already exists!')
@@ -36,9 +33,21 @@ class BusinessData(models.Model):
             length = sum(1 for line in open(path))
             for vals in reader:
                 try:
-                    new_order = self.env['data.order'].create(vals)
-                    self._cr.commit()
-                    _logger.info('Loaded %s from %s. New record: %s' % (reader.line_num, length, new_order.business_name))
+                    old_order = self.env['data.order'].search([('business_name', '=', vals['business_name'])])
+                    if len(old_order) > 0:
+                        old_order.telephone = vals['telephone'] if vals['telephone'] else old_order.telephone
+                        old_order.address = vals['address'] if vals['address'] else old_order.address
+                        old_order.state = vals['state'] if vals['state'] else old_order.state
+                        old_order.post_code = vals['post_code'] if vals['post_code'] else old_order.post_code
+                        old_order.manta_url = vals['manta_url'] if vals['manta_url'] else old_order.manta_url
+                        old_order.source_url = vals['source_url'] if vals['source_url'] else old_order.source_url
+                        old_order.catagery = vals['catagery'] if vals['catagery'] else old_order.catagery
+                        old_order.comment = 'unposted'
+                        _logger.info('Updated %s from %s. Old record: %s' % (reader.line_num, length, old_order.business_name))
+                    else:
+                        new_order = self.env['data.order'].create(vals)
+                        self._cr.commit()
+                        _logger.info('Loaded %s from %s. New record: %s' % (reader.line_num, length, new_order.business_name))
                 except Exception as e:
                     self._cr.rollback()
                     _logger.error('WRONG %s. %s' % (vals,e))
@@ -55,9 +64,6 @@ class BusinessData(models.Model):
                       "manta_url",
                       "source_url",
                       "comment",
-                      "main",
-                      "process",
-                      "unprocessed",
                       "catagery"]
         csvfile = open(path, 'a')
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator="\n")
@@ -76,13 +82,28 @@ class BusinessData(models.Model):
                                  'manta_url': rec.manta_url,
                                  'source_url': rec.source_url,
                                  'comment': rec.comment,
-                                 'main': rec.main,
-                                 'process': rec.process,
-                                 'unprocessed': rec.unprocessed,
                                  'catagery': rec.catagery,
                                  })
-            except:
-                _logger.error('WRONG %s.' % rec.business_name)
-            _logger.info('Export %s from %s.' % (cnt, l))
+                rec.comment = 'posted'
+                _logger.info('Export %s from %s.' % (cnt, l))
+            except Exception as e:
+                _logger.error('WRONG %s.%s' % (rec.business_name, e))
             cnt += 1
         csvfile.close()
+
+
+class OrderURL(models.Model):
+    _name = "data.url"
+
+    main = fields.Char()
+    process = fields.Char()
+    unprocessed = fields.Char(compute='_methods_compute', store=True)
+
+    @api.multi
+    @api.depends('main', 'process')
+    def _methods_compute(self):
+        for rec in self:
+            try:
+                rec.unprocessed = '|'.join(set(rec.main.split("|")) - set(rec.process.split("|")))
+            except Exception as e:
+                _logger.warning(e)

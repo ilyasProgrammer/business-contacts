@@ -23,8 +23,8 @@
             </field>
         </record>
         <record id='data_order_url_tree' model='ir.ui.view'>
-            <field name="name">data.order.url.tree</field>
-            <field name="model">data.order</field>
+            <field name="name">data.urltree</field>
+            <field name="model">data.url</field>
             <field name="priority">2</field>
             <field name="arch" type="xml">
                 <tree string="Data order URLs">
@@ -43,7 +43,7 @@
         </record>
         <record id='menu_business_url_act' model='ir.actions.act_window'>
             <field name="name">Order Data URLs</field>
-            <field name="res_model">data.order</field>
+            <field name="res_model">data.url</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="data_order_url_tree"/>
