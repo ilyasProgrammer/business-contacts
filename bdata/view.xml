@@ -44,7 +44,8 @@
         <record id='menu_business_url_act' model='ir.actions.act_window'>
             <field name="name">Order Data URLs</field>
             <field name="res_model">data.order</field>
-            <field name="view_mode">tree</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
             <field name="view_id" ref="data_order_url_tree"/>
         </record>
 
