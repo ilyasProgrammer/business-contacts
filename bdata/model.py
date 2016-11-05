@@ -107,3 +107,44 @@ class OrderURL(models.Model):
                 rec.unprocessed = '|'.join(set(rec.main.split("|")) - set(rec.process.split("|")))
             except Exception as e:
                 _logger.warning(e)
+
+    def load_url(self):
+        path = os.path.dirname(os.path.abspath(__file__)) + '/load_url.csv'
+        with open(path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            length = sum(1 for line in open(path))
+            for vals in reader:
+                try:
+                    new_url = self.env['data.url'].create(vals)
+                    self._cr.commit()
+                    _logger.info('Loaded %s from %s. New record: %s' % (reader.line_num, length, new_url.id))
+                except Exception as e:
+                    self._cr.rollback()
+                    _logger.error('WRONG %s. %s' % (vals, e))
+
+    def export_url(self):
+        path = os.path.dirname(os.path.abspath(__file__)) + '/export_url_' + time.strftime("%Y%m%d-%H%M%S") + '.csv'
+        open(path, 'a').close()
+        fieldnames = ["id",
+                      "main",
+                      "process",
+                      "unprocessed",
+                      ]
+        csvfile = open(path, 'a')
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        recs = self.env['data.url'].search([])
+        l = len(recs)
+        cnt = 1
+        for rec in recs:
+            try:
+                writer.writerow({'id': rec.id,
+                                 'main': rec.main,
+                                 'process': rec.process,
+                                 'unprocessed': rec.unprocessed,
+                                 })
+                _logger.info('Export %s from %s.' % (cnt, l))
+            except Exception as e:
+                _logger.error('WRONG %s.%s' % (rec.id, e))
+            cnt += 1
+        csvfile.close()

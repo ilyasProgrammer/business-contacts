@@ -21,5 +21,25 @@
         <field name="model">data.order</field>
         <field name="function">export_to_csv</field>
     </record>
+    <record id="load_data_url" model="ir.cron">
+        <field name="name">Load URL</field>
+        <field eval="False" name="active"/>
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model">data.url</field>
+        <field name="function">load_url</field>
+    </record>
+    <record id="export_data_url" model="ir.cron">
+        <field name="name">Export URL</field>
+        <field eval="False" name="active"/>
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model">data.url</field>
+        <field name="function">export_url</field>
+    </record>
 </data>
 </openerp>
